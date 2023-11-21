@@ -1,16 +1,16 @@
-import { StyleSheet, Text, View, Image, ImageBackground, StatusBar, SafeAreaView, ScrollView} from 'react-native';
+import { StyleSheet, Text, View, Image, ImageBackground, StatusBar, SafeAreaView, ScrollView, TouchableOpacity} from 'react-native';
 // import {OpenSansText} from '../ProjectDemo/assets/fonts/OpenSansText-Regular.ttf';
 
 const Ranker=()=> {
   return (
-    <View style={styles.container}>
+    <SafeAreaView  style={styles.container}>
        <ImageBackground style={styles.background} source={{ uri: 'https://i.pinimg.com/564x/1f/8b/34/1f8b34a81ded531546dda85c1dd45856.jpg',}}>
         <View style={styles.navbar}>
-          <Image style={styles.btnLeftArrow} source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2985/2985162.png',}}/>
+          <TouchableOpacity><Image style={styles.imgback} source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2985/2985162.png',}} /></TouchableOpacity>
         {/* <Image style={styles.btnLeftArrow} source={require('../ProjectDemo/assets/left-arrow_nen_tim.png')}/> */}
           <Text style={styles.title}>LEADERBOARD</Text>
         </View>
-        <View  style={styles.main}>
+        <View style={styles.main}>
             <View style = {styles.attribute}>
               <Text style={styles.item}>RANK</Text>
               <Text style={styles.item}>NAME</Text>
@@ -56,7 +56,7 @@ const Ranker=()=> {
               <Text style={styles.item}>TEME NAME HERE</Text>
               <Text style={styles.item}>99</Text>
             </View>
-            <View style = {styles.describe}>
+            {/* <View style = {styles.describe}>
               <Text style={styles.item}>7</Text>
               <Text style={styles.item}>TEME NAME HERE</Text>
               <Text style={styles.item}>99</Text>
@@ -65,11 +65,11 @@ const Ranker=()=> {
               <Text style={styles.item}>8</Text>
               <Text style={styles.item}>TEME NAME HERE</Text>
               <Text style={styles.item}>99</Text>
-            </View>
+            </View> */}
         </View>
       </ImageBackground>
-      <StatusBar style="auto" />
-    </View>
+      <StatusBar style="auto"/>
+    </SafeAreaView>
   );
 }
 
@@ -90,24 +90,27 @@ const styles = StyleSheet.create({
     height: '11%',
     flexDirection: 'row',
     display: 'flex',
+    justifyContent:'center',
     alignItems: 'center',
     justifyContent: 'space-around',
     backgroundColor: '#6A39A9'
   },
-  btnLeftArrow: {
-    width: 33,
-    height: 33,
+  imgback: {
+    width: 40,
+    height: 40,
     padding: 0,
     marginRight: 45,
-    marginLeft: 5,   
+    marginTop:5,
+    marginLeft: 15,   
   },
 
   title: {
-    fontSize: 25,
+    fontSize: 35,
     fontWeight: 'bold',
     color: 'white',
     padding: 0,
-    marginRight: 110,  
+    marginRight: 60,  
+    
   },
     
   main: {
