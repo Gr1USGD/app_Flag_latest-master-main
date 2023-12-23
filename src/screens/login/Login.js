@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View, ImageBackground, Dimensions, Image, TouchableHighlight } from 'react-native'
 import React from 'react'
+import { signIn } from '../../utils/Auth';
 const image = { uri: 'https://i.imgur.com/l3tLQay.png' };
 width = Dimensions.get('screen').width;
 height = Dimensions.get('screen').height;
-const Login = () => {
+const Login = ({navigation}) => {
   return (
     <View style={styles.container}>
       <ImageBackground source={image} resizeMode='cover' style={styles.image}>
@@ -23,7 +24,7 @@ const Login = () => {
           >
             <View style={styles.buttonContent}>
               <Image source={{ uri: 'https://cdn-icons-png.flaticon.com/128/300/300221.png' }} style={styles.img} />
-              <Text style={styles.text}>LOGIN WITH GOOGLE</Text>
+              <Text style={styles.text} onPress={()=>signIn()}>LOGIN WITH GOOGLE</Text>
             </View>
           </TouchableHighlight>
         </View>
@@ -67,17 +68,16 @@ const styles = StyleSheet.create({
   innerText: {
     color: 'white',
     top: '15%',
-    fontSize: 15,
+    fontSize: width *0.05,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   buttonLogin: {
-    top: '20%',
+    top: '10%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   button: {
-    padding: '6%',
     width: '70%',
     backgroundColor: '#6A39A9',
     justifyContent: 'center',
@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
   buttonContent: {
     display: 'flex',
     flexDirection: 'row',
+    height: '30%',
     width: '80%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   img: {
-    width: '20%',
-    height: '170%',
+    width: 40,
+    height: 40,
   },
 })

@@ -1,73 +1,146 @@
-import { StyleSheet, Text, View, Image, ImageBackground, StatusBar, SafeAreaView, ScrollView} from 'react-native';
-// import {OpenSansText} from '../ProjectDemo/assets/fonts/OpenSansText-Regular.ttf';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, SafeAreaView, Text, View, Image, Dimensions, ImageBackground, StatusBar, TouchableOpacity } from 'react-native';
+import { createRank, getAllUsers } from '../../utils/Database';
+import { FlatList } from 'react-native-gesture-handler';
+const width = Dimensions.get('screen').width;
+const height = Dimensions.get('screen').height;
 
-const Ranker=()=> {
+const Ranker = ({navigation}) => {
+  const [selectedOption, setSelectedOption] = useState('image');
+
+  const handleGuessImage = () => {
+    setSelectedOption('image'); // Đặt trạng thái khi chọn 'Nhìn hình đoán chữ'
+  };
+
+  const handleGuessWord = () => {
+    setSelectedOption('word');
+
+  };
+  const [textGuessRanking, setTextGuessRanking] = useState([]);
+  const [picGuessRanking, setPicGuessRanking] = useState([]);
+  const getAllUsersToSort = async () => {
+    try {
+      const users = await getAllUsers(); // Lấy toàn bộ thông tin người dùng
+      // console.log('users', users);
+      const usersData = users.docs.map((doc) => {
+        const userData = doc.data();
+        return {
+          uid: doc.id, // Sử dụng doc.id để lấy uid của người dùng
+          ...userData,
+        };
+      });
+      const usersDataByTextGuess = [...usersData];
+      usersDataByTextGuess.sort((a, b) => b.textGuess.total - a.textGuess.total);
+      setTextGuessRanking(usersDataByTextGuess);
+      console.log('Sắp xếp user:', usersDataByTextGuess);
+
+      const usersDataByPicGuess = [...usersData];
+      usersDataByPicGuess.sort((a, b) => b.picGuess.total - a.picGuess.total);
+      setPicGuessRanking(usersDataByPicGuess);
+      
+      usersDataByTextGuess.forEach((user, index) => {
+        createRank(user.uid, {textGuess: {rank: index + 1}});
+        console.log('user', user);
+      });
+      usersDataByPicGuess.forEach((user, index) => {
+        createRank(user.uid, {picGuess: {rank: index + 1}});
+      });
+    } catch (error) {
+      console.error('Error fetching and sorting users:', error);
+    }
+  }
+  useEffect(() => {
+    getAllUsersToSort();
+  },[]);
+  const renderItem= ({item}) => {
+    return (
+      <SafeAreaView>
+         <FlatList
+         data={selectedOption === 'image' ? picGuessRanking : textGuessRanking}
+         keyExtractor={item.id}
+         showsVerticalScrollIndicator={false}
+         style={{
+           display: 'flex',
+           flexDirection: 'column',
+           // paddingVertical: 20,
+         }}
+         contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
+         renderItem={({ item: user, index }) => (
+           <View
+             style={{
+               width: '95%',
+               padding: 15,
+               height: 90,
+               borderRadius: 8,
+               marginVertical: 10,
+               // marginHorizontal: 10,
+               flexDirection: 'row',
+               alignItems: 'center',
+               justifyContent: 'space-between',
+               backgroundColor: '#DAE9FF',
+               elevation: 2,
+             }}>
+             <View
+               key={user.id}
+               style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', height: '130%' }}>
+               <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', width: '30%', height: '100%'}}>
+                 <Text style={{ fontSize: 20 }}>{index + 1}</Text>
+                 <Image source={{ uri: user.photoURL }} style={{ width: 45, height: 45, borderRadius: 100 }} />
+               </View>
+               <View style={{ width: '70%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                 <View style={{ width: '100%', height: '45%', display: 'flex', flexDirection:'row',alignItems: 'flex-end'}}>
+                   <Text style={{fontSize: 17}}>{user.displayName}</Text>
+                 </View>
+                 <View style={{ width: '100%', height: '45%'}}>
+                   <Text style={{fontSize: 15}}>Tổng điểm:  {selectedOption === 'image' ? user.picGuess.total : user.textGuess.total}</Text>
+                 </View>
+               </View>
+             </View>
+
+           </View>
+         )}
+       />
+      </SafeAreaView>
+    )
+  }
   return (
     <View style={styles.container}>
-       <ImageBackground style={styles.background} source={{ uri: 'https://i.pinimg.com/564x/1f/8b/34/1f8b34a81ded531546dda85c1dd45856.jpg',}}>
+      <ImageBackground style={styles.background} source={{ uri: 'https://i.pinimg.com/564x/1f/8b/34/1f8b34a81ded531546dda85c1dd45856.jpg' }}>
         <View style={styles.navbar}>
-          <Image style={styles.btnLeftArrow} source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2985/2985162.png',}}/>
-        {/* <Image style={styles.btnLeftArrow} source={require('../ProjectDemo/assets/left-arrow_nen_tim.png')}/> */}
-          <Text style={styles.title}>LEADERBOARD</Text>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.btnLeftArrow} onPress={()=> navigation.navigate('Home')}>
+              <Image style={{width:33,height:33}}  source={require('../../../assets/previous.png')} />
+            </TouchableOpacity>
+            
+            <Text style={styles.title}>BẢNG XẾP HẠNG</Text>
+          </View>
+          <View style={styles.menu}>
+            <TouchableOpacity
+              style={[
+                styles.menuItem,
+                { position: 'relative' },
+              ]}
+              onPress={handleGuessImage}
+            >
+              <Text style={[styles.menuText,selectedOption === 'image' ? styles.selectedMenuActive : styles.selectedMenuInactive]}>Nhìn hình đoán chữ</Text>
+              <View style={[styles.selectedMenuBorder, selectedOption === 'image' ? styles.selectedMenuActive : styles.selectedMenuInactive]} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.menuItem,
+                { position: 'relative' },
+              ]}
+              onPress={handleGuessWord}
+            >
+              <Text style={[styles.menuText,selectedOption === 'word' ? styles.selectedMenuActive : styles.selectedMenuInactive]}>Nhìn chữ đoán hình</Text>
+              <View style={[styles.selectedMenuBorder, selectedOption === 'word' ? styles.selectedMenuActive : styles.selectedMenuInactive]} />
+            </TouchableOpacity>
+          </View>
+          
         </View>
-        <View  style={styles.main}>
-            <View style = {styles.attribute}>
-              <Text style={styles.item}>RANK</Text>
-              <Text style={styles.item}>NAME</Text>
-              <Text style={styles.item}>SCORE</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>1</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>2</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>3</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>4</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>5</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>6</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>7</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>8</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>7</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-            <View style = {styles.describe}>
-              <Text style={styles.item}>8</Text>
-              <Text style={styles.item}>TEME NAME HERE</Text>
-              <Text style={styles.item}>99</Text>
-            </View>
-        </View>
+        {renderItem({item: selectedOption})}
       </ImageBackground>
+
       <StatusBar style="auto" />
     </View>
   );
@@ -77,83 +150,71 @@ export default Ranker;
 
 const styles = StyleSheet.create({
   container: {
-      width: '100%',
-      height: '100%',
-      fontStyle: 'lalezer',    
+    flex: 1,
   },
   background: {
-     height: '100%',
-     width: '100%'
+    width: width,
+    height: height,
+    flex: 1,
+    resizeMode: 'cover',
   },
   navbar: {
-    width: '100%',
-    height: '11%',
-    flexDirection: 'row',
-    display: 'flex',
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: '#6A39A9'
+    backgroundColor: '#6A39A9',
+    height: '20%',
+  },
+  header: {
+    marginTop: '15%',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
   },
   btnLeftArrow: {
+    position: 'absolute',
+    bottom: '80%',
     width: 33,
     height: 33,
-    padding: 0,
-    marginRight: 45,
-    marginLeft: 5,   
+    right: '62%',
   },
-
   title: {
     fontSize: 25,
     fontWeight: 'bold',
     color: 'white',
-    padding: 0,
-    marginRight: 110,  
   },
-    
-  main: {
-    width: '100%',
-    height: '89%',
-    // mixBlendMode: 'screen',
-    // backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    overflow: 'auto',
-  },
-
-  attribute: {
-    width: '100%',
-    height: '10%',
+  menu: {
     flexDirection: 'row',
-    display: 'flex',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
-    fontSize: 25,
-    fontWeight: 'bold',
-  },
+    marginTop: '5%',
 
-  describe: {
-    width: '90%',
-    height: '9.5%',
-    flexDirection: 'row',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    fontSize: 25,
-    fontWeight: 'bold',
+  },
+  selectedMenuInactive: {
+    color: 'rgba(255, 255, 255, 0.3)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.3)', // Màu nhạt khi không được chọn
+  },
+  selectedMenuActive: {
+    borderBottomColor: 'white',
+    borderRadius: 2, // Màu đậm khi được chọn
+  },
+  menuItem: {
     backgroundColor: '#6A39A9',
-    borderRadius: 10,
-    marginBottom: 10,
-    overflow: 'auto',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
-
-  item: {
-    fontSize: 25,
-    fontWeight: 'bold',
+  selectedMenuItem: { // Độ dày của đường gạch dưới và khoảng cách với văn bản
+  },
+  selectedMenuBorder: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderBottomWidth: 4, // Độ dày của đường gạch dưới
+    borderBottomColor: 'white', // Màu của đường gạch dưới
+  },
+  menuText: {
     color: 'white',
-    padding: 0,
-    margin: 0,
-    // overflow: 'auto',
+    fontWeight: 'bold',
+    fontSize: 16,
+
   },
-
-
 });
